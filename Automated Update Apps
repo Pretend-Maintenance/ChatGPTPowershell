@@ -1,0 +1,9 @@
+# Update all installed apps using winget
+winget update --all
+
+# Create a scheduled task to run the script weekly at noon
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-File C:\path\to\script.ps1'
+$trigger = New-ScheduledTaskTrigger -Weekly -At 12:00pm
+$principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
+$settings = New-ScheduledTaskSettingsSet
+Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -TaskName "UpdateAppsTask" -Description "Updates all installed apps using winget"
