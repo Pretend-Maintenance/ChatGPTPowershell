@@ -1,0 +1,29 @@
+# Define the list of ESXi hosts to connect to
+$esxiHosts = "esxi1.example.com", "esxi2.example.com", "esxi3.example.com"
+
+# Loop through the list of ESXi hosts and prompt the user for credentials for each host
+$credentials = @()
+foreach ($esxiHost in $esxiHosts) {
+    Write-Host "Enter credentials for $esxiHost"
+    $username = Read-Host "Username"
+    $password = Read-Host "Password" -AsSecureString
+    $credentials += New-Object System.Management.Automation.PSCredential ($username, $password)
+}
+
+# Define the command to run on the ESXi hosts to show the build version
+$command = "vmware -vl"
+
+# Loop through the list of ESXi hosts and connect via SSH to each host
+for ($i = 0; $i -lt $esxiHosts.Count; $i++) {
+    $esxiHost = $esxiHosts[$i]
+    $credential = $credentials[$i]
+    Write-Host "Connecting to $esxiHost..."
+    $session = New-SSHSession -ComputerName $esxiHost -Credential $credential
+
+    # Execute the command to show the build version and output the results
+    $output = Invoke-SSHCommand -SessionId $session.SessionId -Command $command
+    Write-Host "Build version on $esxiHost: $($output.Output)"
+
+    # Close the SSH session
+    Remove-SSHSession -SessionId $session.SessionId
+}
